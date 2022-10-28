@@ -487,7 +487,6 @@ def main():
                         new_env = os.environ.copy()
 
                         row, col = exterior_connection.find_parameter_cells(None, key, sheet_values = Exterior.all_sheet_values)
-                        print(row, col)
                         col = convert_col_index(col)
                         row_parameters = Exterior.all_sheet_values[row-1]
                         row_values = Exterior.all_sheet_values[row]
@@ -518,7 +517,6 @@ def main():
                             script_command = "pythonw"
 
                         ClientScripts.ActiveSubprocesses.processes[key] = subprocess.Popen([script_command, script_path], cwd = script_parent_dir_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, env=new_env)
-                        print(key)
                         protect_connection(f"server.send_data('{key}'"+", {'STATUS': 'Running ("+datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S')+")'}, ALL_SHEET_VALUES = Exterior.all_sheet_values)")
                         # protect_connection(f"exterior_connection.update_parameter_status(sheet, '{key}', 'Running ({datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S')})', Exterior.all_sheet_values)")
                         ClientScripts.statuses[key]="Running"

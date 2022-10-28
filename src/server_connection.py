@@ -13,9 +13,7 @@ class Server:
 	def auth_client(self, CLIENT_CODE):
 		payload = {"CLIENT_CODE": CLIENT_CODE}
 		response = requests.post(f"{self.CLIENT_APP_URL}auth_client/", data = payload)
-		print(response)
 		response_dict = response.json()
-		print(response_dict)
 		AUTH_ID = response_dict["AUTH_ID"]
 		return AUTH_ID
 
