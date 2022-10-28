@@ -1,0 +1,9 @@
+# To be created manually for each client. Contents: JSON string containing {"CLIENT_CODE": , "SERVER_URL": }
+CLIENT_CONSTANTS.json 
+
+
+# Automatically created
+local_scripts/
+
+
+__pycache__/
