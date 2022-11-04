@@ -6,4 +6,5 @@ CLIENT_CONSTANTS.json
 local_scripts/
 
 
+exe/
 __pycache__/

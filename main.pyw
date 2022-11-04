@@ -135,35 +135,41 @@ desc_section2.grid_remove()
 
 
 def restart_program_fromTkWin():
+    global gicon
     root.destroy()
     exit_handler()
+    gicon.stop()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 def quit_window_fromTkWin():
+    global gicon
     root.destroy()
     exit_handler() # explicitly calling exit handler due to os._exit not allowing atexit to cleanup 
-    os._exit(0)
+    gicon.stop()
+    os._exit(1)
 
 
 def restart_program_fromSysTray(icon, item):
-    icon.stop()
+    global gicon
     root.destroy()
+    gicon.stop()
     exit_handler()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 def quit_window_fromSysTray(icon, item):
-    icon.stop()
+    global gicon
     root.destroy()
     exit_handler()
-    os._exit(0)
+    gicon.stop()
+    os._exit(1)
 
-def show_window(icon, item):
-    icon.stop()
+def show_window(gicon, item):
+    # gicon.stop()
     root.deiconify()
 
 
 im = PIL.Image.open("favicon.ico")
-systrayicon_menu = pystray.Menu(
+systraygicon_menu = pystray.Menu(
     pystray.MenuItem(
         'Show log', 
         show_window,
@@ -176,6 +182,7 @@ systrayicon_menu = pystray.Menu(
         quit_window_fromSysTray))
 
 
+
 def withdraw_window():  
     for widget in root.winfo_children():
         if isinstance(widget, tk.Toplevel) and widget.title() == "ScriptCaster - Settings":
@@ -183,8 +190,10 @@ def withdraw_window():
             widget.destroy()
             break
     root.withdraw()
-    icon = pystray.Icon("script-caster-icon",im,"ScriptCaster", menu=systrayicon_menu)
-    icon.run()
+    # global gicon
+    # gicon = pystray.Icon("script-caster-gicon",im,"ScriptCaster", menu=systraygicon_menu)
+    # gicon.run()
+
 
 
 final_button_section = tk.Frame(root)
@@ -377,6 +386,7 @@ def update_local_client_scripts():
 def main():
     
     main.initialized = False
+    main.HIDDEN = None
 
     global mainlogger1
     global mainlogger2
@@ -443,6 +453,12 @@ def main():
 
         if not main.first_iter:
             protect_connection(f'Exterior.records, Exterior.all_sheet_values, x = server.get_tasks(0)')
+
+        if Exterior.records["HIDDEN"] == "ON":
+            main.HIDDEN = True
+        else:
+            main.HIDDEN = False
+
 
         if Exterior.records["UPDATE_LOCAL_CLIENT_SCRIPTS"] == "ON":
             
@@ -654,10 +670,38 @@ main_thread.start()
 
 
 
+gicon = None
+
+
+def gicon_manager(gicon_running):
+    print(main.HIDDEN)
+    if main.HIDDEN is not None:
+        global gicon
+        if main.HIDDEN is True:
+            if root.winfo_viewable(): 
+                withdraw_window()
+            if gicon_running is True: 
+                root.after(10, gicon.stop)
+                gicon_running = False
+        elif main.HIDDEN is False:
+            if gicon_running is False:
+                if sys.platform == 'darwin':
+                    # ??
+                    pass
+                else:
+                    darwin_nsapplication = None
+                gicon = pystray.Icon("script-caster-gicon",im,"ScriptCaster", menu=systraygicon_menu, darwin_nsapplication = darwin_nsapplication)
+                root.after(10, gicon.run_detached)
+                # threading.Thread(target=gicon.run()).start()
+                gicon_running = True
+    root.after(500, lambda: gicon_manager(gicon_running))
+
 
 def mainloop_callback():
     if SHOW_WINDOW is False:
         root.after(10, withdraw_window)
+    
+    root.after(500, lambda: gicon_manager(False))
     root.after(500, show_selected_log)
 
 
